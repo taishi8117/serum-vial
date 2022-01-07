@@ -66,10 +66,12 @@ class Exporter {
 
       if (message.type === 'recent_trades') {
         const recentTrades = JSON.parse(message.payload)
+        //console.log(recentTrades)
         for (let trade of recentTrades.trades) {
-          trade['timestamp'] = new Date(message.timestamp)
+          //console.log(trade.timestamp)
+          trade['timestamp'] = new Date(trade.timestamp)
+          trade['recent_timestamp'] = new Date(message.timestamp)
           trade['recv_timestamp'] = receivedTs
-          //console.log(trade)
           this._tradesBuffer.push(trade)
         }
       }
