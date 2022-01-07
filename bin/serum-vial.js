@@ -64,6 +64,12 @@ const argv = yargs
     default: ''
   })
 
+  .option('mongo-uri', {
+    type: 'string',
+    describe: 'Mongo connection string',
+    default: ''
+  })
+
   .help()
   .version()
   .usage('$0 [options]')
@@ -96,7 +102,8 @@ async function start() {
     wsEndpointPort: argv['ws-endpoint-port'],
     minionsCount: argv['minions-count'],
     commitment: argv['commitment'],
-    bootDelay: argv['boot-delay']
+    bootDelay: argv['boot-delay'],
+    mongoURI: argv['mongo-uri']
   }
 
   logger.log('info', 'Starting serum-vial server with options', options)

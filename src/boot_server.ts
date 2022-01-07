@@ -12,7 +12,8 @@ export async function bootServer({
   minionsCount,
   markets,
   commitment,
-  bootDelay
+  bootDelay,
+  mongoURI
 }: BootOptions) {
   // multi core support is linux only feature which allows multiple threads to bind to the same port
   // see https://github.com/uNetworking/uWebSockets.js/issues/304 and https://lwn.net/Articles/542629/
@@ -50,6 +51,20 @@ export async function bootServer({
     }
 
     resolve()
+  })
+
+  // exporter
+  logger.log('info', 'Starting exporter worker...')
+
+  const exporterWorker = new Worker(path.resolve(__dirname, 'exporter.js'), {
+    workerData: { mongoURI }
+  })
+  exporterWorker.on('error', (err) => {
+    logger.log('error', `Exporter error occurred: ${err.message} ${err.stack}`)
+    throw err
+  })
+  exporterWorker.on('exit', (code) => {
+    logger.log('error', `Exporter worker died with code ${code}`)
   })
 
   logger.log('info', `Starting serum producers for ${markets.length} markets, rpc endpoint: ${nodeEndpoint}`)
@@ -105,4 +120,5 @@ type BootOptions = {
   commitment: string
   markets: SerumMarket[]
   bootDelay: number
+  mongoURI: string
 }

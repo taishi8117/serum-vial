@@ -16,6 +16,7 @@
     "test": "npm run build && jest --forceExit",
     "prepare": "npm run build",
     "start:debug": "npm run build && node ./bin/serum-vial.js --log-level=debug",
+    "start": "npm run build && node ./bin/serum-vial.js",
     "format": "prettier --write .",
     "check-format": "prettier --check ."
   },
@@ -47,6 +48,7 @@
     "bn.js": "^5.2.0",
     "didyoumean2": "^5.0.0",
     "is-docker": "^2.2.1",
+    "mongodb": "^4.3.0",
     "node-fetch": "^2.6.1",
     "uWebSockets.js": "git+https://git@github.com/uNetworking/uWebSockets.js.git#v20.6.0",
     "winston": "^3.3.3",
