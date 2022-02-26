@@ -22,7 +22,7 @@ class Exporter {
   private _dbWriteTimer: NodeJS.Timeout | undefined = undefined
   private _mongoCli: MongoClient | undefined = undefined
 
-  private MONGO_DBNAME = 'serumfeed'
+  private MONGO_DBNAME = 'serum_market'
 
   constructor(_mongoURI: string) {
     this._mongoCli = new MongoClient(_mongoURI)
@@ -91,8 +91,17 @@ class Exporter {
 
       logger.log('info', `writing tradesBuffer to mongo with size: ${this._tradesBuffer.length}`)
       if (this._tradesBuffer.length > 0) {
-        await this._mongoCli?.db(this.MONGO_DBNAME).collection('trades').insertMany(this._tradesBuffer)
+        const tradesUniq = this._tradesBuffer.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i)
         this._tradesBuffer = []
+        try {
+          await this._mongoCli?.db(this.MONGO_DBNAME).collection('trades').insertMany(tradesUniq, { ordered: false })
+        } catch (err) {
+          if ((err as any).code === 11000) {
+            //logger.log('info', 'duplicates', err)
+          } else {
+            throw err
+          }
+        }
       }
     } catch (err) {
       logger.log('error', `error while writing to db: ${err}`)
