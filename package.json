@@ -48,8 +48,10 @@
     "bn.js": "^5.2.0",
     "didyoumean2": "^5.0.0",
     "is-docker": "^2.2.1",
+    "lru-cache": "^7.4.0",
     "mongodb": "^4.3.0",
     "node-fetch": "^2.6.1",
+    "redis": "^4.0.4",
     "uWebSockets.js": "git+https://git@github.com/uNetworking/uWebSockets.js.git#v20.6.0",
     "winston": "^3.3.3",
     "ws": "^8.3.0",
@@ -57,6 +59,7 @@
   },
   "devDependencies": {
     "@types/jest": "^27.0.3",
+    "@types/lru-cache": "^7.4.0",
     "@types/node": "^17.0.0",
     "@types/node-fetch": "^2.5.12",
     "@types/ws": "^8.2.2",

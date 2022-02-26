@@ -1,5 +1,5 @@
 import { isMainThread, threadId, workerData } from 'worker_threads'
-import { cleanupChannel, serumDataChannel, serumMarketsChannel } from './helpers'
+import { cleanupChannel, serumDataChannel } from './helpers'
 import { logger } from './logger'
 import { MessageEnvelope } from './serum_producer'
 import { MongoClient } from 'mongodb'
@@ -24,9 +24,9 @@ class Exporter {
 
   private _mongo_dbname: string
 
-  constructor(_mongoURI: string, _mongo_dbname: string) {
+  constructor(_mongoURI: string, _mongo_dbname: string, commitment: string) {
     this._mongoCli = new MongoClient(_mongoURI)
-    this._mongo_dbname = _mongo_dbname
+    this._mongo_dbname = `${_mongo_dbname}_${commitment}`
   }
 
   public async start() {
@@ -113,11 +113,13 @@ class Exporter {
   }
 }
 
-const { mongoURI } = workerData as {
+const { mongoURI, mongoDBName, commitment } = workerData as {
   mongoURI: string
+  mongoDBName: string
+  commitment: string
 }
 
-const exporter = new Exporter(mongoURI)
+const exporter = new Exporter(mongoURI, mongoDBName, commitment)
 
 exporter.start()
 

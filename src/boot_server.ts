@@ -13,7 +13,10 @@ export async function bootServer({
   markets,
   commitment,
   bootDelay,
-  mongoURI
+  mongoURI,
+  mongoDBName,
+  redisURI,
+  redisKeyPrefix
 }: BootOptions) {
   // multi core support is linux only feature which allows multiple threads to bind to the same port
   // see https://github.com/uNetworking/uWebSockets.js/issues/304 and https://lwn.net/Articles/542629/
@@ -54,18 +57,38 @@ export async function bootServer({
   })
 
   // exporter
-  logger.log('info', 'Starting exporter worker...')
+  if (!mongoURI || !mongoDBName) {
+    logger.log('warn', `disabling exporter: mongo params not specified: ${mongoURI} / ${mongoDBName}`)
+  } else {
+    logger.log('info', 'Starting exporter worker...')
+    const exporterWorker = new Worker(path.resolve(__dirname, 'exporter.js'), {
+      workerData: { mongoURI, mongoDBName, commitment }
+    })
+    exporterWorker.on('error', (err) => {
+      logger.log('error', `Exporter error occurred: ${err.message} ${err.stack}`)
+      throw err
+    })
+    exporterWorker.on('exit', (code) => {
+      logger.log('error', `Exporter worker died with code ${code}`)
+    })
+  }
 
-  const exporterWorker = new Worker(path.resolve(__dirname, 'exporter.js'), {
-    workerData: { mongoURI }
-  })
-  exporterWorker.on('error', (err) => {
-    logger.log('error', `Exporter error occurred: ${err.message} ${err.stack}`)
-    throw err
-  })
-  exporterWorker.on('exit', (code) => {
-    logger.log('error', `Exporter worker died with code ${code}`)
-  })
+  // streamer
+  if (!redisURI || !redisKeyPrefix) {
+    logger.log('warn', `disabling streamer: redis params not specified: ${redisURI}, ${redisKeyPrefix}`)
+  } else {
+    logger.log('info', 'Starting streamer worker...')
+    const streamerWorker = new Worker(path.resolve(__dirname, 'streamer.js'), {
+      workerData: { redisURI, redisKeyPrefix, commitment }
+    })
+    streamerWorker.on('error', (err) => {
+      logger.log('error', `Streamer error occurred: ${err.message} ${err.stack}`)
+      throw err
+    })
+    streamerWorker.on('exit', (code) => {
+      logger.log('error', `Streamer worker died with code ${code}`)
+    })
+  }
 
   logger.log('info', `Starting serum producers for ${markets.length} markets, rpc endpoint: ${nodeEndpoint}`)
 
@@ -121,4 +144,7 @@ type BootOptions = {
   markets: SerumMarket[]
   bootDelay: number
   mongoURI: string
+  mongoDBName: string
+  redisURI: string
+  redisKeyPrefix: string
 }

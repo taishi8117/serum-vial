@@ -69,6 +69,22 @@ const argv = yargs
     describe: 'Mongo connection string',
     default: ''
   })
+  .option('mongo-db-name', {
+    type: 'string',
+    describe: 'Mongo database name',
+    default: ''
+  })
+
+  .option('redis-uri', {
+    type: 'string',
+    describe: 'Redis connection string',
+    default: ''
+  })
+  .option('redis-key-prefix', {
+    type: 'string',
+    describe: 'Redis stream key prefix',
+    default: ''
+  })
 
   .help()
   .version()
@@ -103,7 +119,10 @@ async function start() {
     minionsCount: argv['minions-count'],
     commitment: argv['commitment'],
     bootDelay: argv['boot-delay'],
-    mongoURI: argv['mongo-uri']
+    mongoURI: argv['mongo-uri'],
+    mongoDBName: argv['mongo-db-name'],
+    redisURI: argv['redis-uri'],
+    redisKeyPrefix: argv['redis-key-prefix']
   }
 
   logger.log('info', 'Starting serum-vial server with options', options)
